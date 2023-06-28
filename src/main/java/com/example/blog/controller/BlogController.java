@@ -104,8 +104,6 @@ public class BlogController {
     public PostResponseDto updatePost(@PathVariable Long id, @RequestBody PostRequestDto requestDto) {
         // 1. 바꿀 얘를 찾아야 한다.
         Post post = findById(id);
-        System.out.println(post.getPassword());
-        System.out.println(requestDto.getPassword());
 
         // 2. 바꿔준다.
         if (post != null) {
