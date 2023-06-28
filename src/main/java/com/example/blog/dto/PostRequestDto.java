@@ -1,6 +1,7 @@
 package com.example.blog.dto;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
@@ -11,12 +12,13 @@ public class PostRequestDto {
     private String title;
     private String writer;
     private String password;
-    private String content;
+    private String contents;
 
     public PostRequestDto(String title, String writer, String password, String content) {
         this.title = title;
         this.writer = writer;
         this.password = password;
-        this.content = content;
+        this.contents = content;
     }
+
 }

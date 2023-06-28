@@ -29,4 +29,5 @@ public class PostResponseDto {
         this.content = content;
        this.createdAt = createdAt;
     }
+
 }

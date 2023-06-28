@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -23,9 +22,11 @@ public class BlogController {
     public BlogController(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+
+    //게시글 작성
     @PostMapping("/post")
     //접근제어자 반환값 메서드명 (입력값...){}
-    public PostResponseDto writePost(@RequestBody PostRequestDto postRequestDto){
+    public PostResponseDto writePost(@RequestBody PostRequestDto postRequestDto) {
         //1. 클라이언트가 요청한 데이터를 받아온다.[postRequestDTO]
         //2. 받아온 데이터를 DB에 저장할 수 있는 데이터로 변환을 해줘야 한다.[postRequestDto -> post]
         Post post = new Post(postRequestDto);
@@ -34,7 +35,7 @@ public class BlogController {
         KeyHolder keyHolder = new GeneratedKeyHolder(); // 기본 키를 반환받기 위한 객체
 
         String sql = "INSERT INTO post (title, contents, writer, password, createdAt) VALUES (?, ?, ?, ?, ?)";
-        jdbcTemplate.update( con -> {
+        jdbcTemplate.update(con -> {
                     PreparedStatement preparedStatement = con.prepareStatement(sql,
                             Statement.RETURN_GENERATED_KEYS);
 
@@ -59,6 +60,7 @@ public class BlogController {
         return postResponseDto;
     }
 
+    //전체 게시글 조회
     @GetMapping("/post")
     public List<PostResponseDto> getPosts() {
         // DB 조회
@@ -77,4 +79,97 @@ public class BlogController {
             }
         });
     }
+
+    //선택한 게시글 조회 API
+    //무엇을 받아서 어떤 행동을 할거야? 클라이언트 --(요청)--> 서버 [ 무언가를 보내서 어떤 처리를 한 후에 무언가를 받고 싶어 ]
+    //게시글 Id
+    //접근제어자 반환값 메서드명 (입력값...매개변수){}
+    @GetMapping("/post/{id}")
+    public PostResponseDto selectedPost(@PathVariable Long id) {
+        Post post = findById(id);
+
+        if (post != null) {
+            System.out.println(post);
+            return new PostResponseDto(post);
+        } else {
+            throw new IllegalArgumentException("선택한 메모는 존재하지 않습니다.");
+        }
+    }
+
+
+    //선택한 게시글 수정 API
+    //무엇을 받아서 어떤 행동을 할거야?
+    //게시글 id, 수정할 게시글 내용
+    @PutMapping("/post/{id}")
+    public PostResponseDto updatePost(@PathVariable Long id, @RequestBody PostRequestDto requestDto) {
+        // 1. 바꿀 얘를 찾아야 한다.
+        Post post = findById(id);
+        System.out.println(post.getPassword());
+        System.out.println(requestDto.getPassword());
+
+        // 2. 바꿔준다.
+        if (post != null) {
+            String password = requestDto.getPassword();
+            String dbPassword = post.getPassword();
+            if (password.equals(dbPassword)) {
+                // post 내용 수정
+                String sql = "UPDATE post SET title = ?, writer = ?, contents = ? WHERE id = ?";
+
+                jdbcTemplate.update(sql, requestDto.getTitle(), requestDto.getWriter(), requestDto.getContents(), id);
+
+                // 1. requestDTO 변경할 내용을 담아왔잖아요. => 이걸 그대로 보내줘도 된다.
+                // 2. DB post 테이블에 저장이 되어있죠. => DB에서 다시 가져오는 방법이 있어요.
+
+                // 3. 바꾼 내용을 반환해준다.
+                PostResponseDto postResponseDto =
+                        new PostResponseDto(requestDto.getTitle(), requestDto.getWriter(), requestDto.getContents(), post.getCreatedAt());
+
+                return postResponseDto;
+            } else {
+                throw new IllegalArgumentException("비밀 번호가 틀립니다.");
+            }
+        } else {
+            throw new IllegalArgumentException("선택한 메모는 존재하지 않습니다.");
+        }
+    }
+
+        // 해당 메모가 DB에 존재하는지 확인
+
+
+    //선택한 게시글 삭제 API
+    @DeleteMapping("/post/{id}")
+    public String deletePost(@PathVariable Long id) {
+        // 해당 메모가 DB에 존재하는지 확인
+        Post post = findById(id);
+        if(post != null) {
+            // post 삭제
+            String sql = "DELETE FROM post WHERE id = ?";
+            jdbcTemplate.update(sql, id);
+
+            return "삭제 하였습니다.";
+        } else {
+            throw new IllegalArgumentException("선택한 메모는 존재하지 않습니다.");
+        }
+    }
+
+    private Post findById(Long id) {
+        // DB 조회
+        String sql = "SELECT * FROM post WHERE id = ?";
+
+        return jdbcTemplate.query(sql, resultSet -> {
+            if(resultSet.next()) {
+                Post post = new Post();  // 기본생성자 생성
+                post.setPassword(resultSet.getString("password"));
+                post.setTitle(resultSet.getString("title"));
+                post.setWriter(resultSet.getString("writer"));
+                post.setContents(resultSet.getString("contents"));
+                post.setCreatedAt(resultSet.getTimestamp("createdAt").toLocalDateTime());
+                return post;
+            } else {
+                return null;
+            }
+        }, id);
+    }
+
+
 }
