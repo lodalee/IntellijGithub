@@ -12,15 +12,15 @@ public class Post {
     private Long id;
     private String title;
     private String writer;
-    private String content;
+    private String contents;
     private String password;
     private LocalDateTime createdAt;
 
-    public Post(PostRequestDto postRequestDTO) {
-        this.title = postRequestDTO.getTitle();
-        this.writer = postRequestDTO.getWriter();
-        this.content = postRequestDTO.getContent();
-        this.password = postRequestDTO.getPassword();
+    public Post(PostRequestDto postRequestDto) {
+        this.title = postRequestDto.getTitle();
+        this.writer = postRequestDto.getWriter();
+        this.contents = postRequestDto.getContent();
+        this.password = postRequestDto.getPassword();
         this.createdAt = LocalDateTime.now();
     }
 }

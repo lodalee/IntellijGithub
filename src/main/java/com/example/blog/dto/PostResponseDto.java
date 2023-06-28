@@ -16,14 +16,17 @@ public class PostResponseDto {
     public PostResponseDto(Post post) {
         this.title = post.getTitle();
         this.writer = post.getWriter();
-        this.content = post.getContent();
+        this.content = post.getContents();
         this.createdAt = post.getCreatedAt();
     }
-//
-//    public PostResponseDto(String title, String writer, String content, LocalDateTime createdAt ) {
-//        this.title = title;
-//        this.writer = writer;
-//        this.content = content;
-//        this.createdAt = createdAt;
-//    }
+
+    public PostResponseDto(String title, String writer, String password, String content) {
+    }
+
+    public PostResponseDto(String title, String writer, String content, LocalDateTime createdAt ) {
+        this.title = title;
+        this.writer = writer;
+        this.content = content;
+       this.createdAt = createdAt;
+    }
 }
